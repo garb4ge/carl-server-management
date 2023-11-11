@@ -1,0 +1,26 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: influxdb
+  namespace: bot-monitoring
+spec:
+  repo: https://helm.influxdata.com/
+  chart: influxdb
+  targetNamespace: bot-monitoring
+  valuesContent: |-
+    persistence:
+      enabled: false
+
+    setDefaultUser:
+      enabled: true
+      user:
+        username: admin
+        password: letsrockthis
+      initScripts:
+        enabled: true
+        scripts:
+          init.iql: |+
+            CREATE DATABASE "bot" WITH DURATION 30d
+    nodeSelector:
+      kubernetes.io/hostname: master

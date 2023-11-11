@@ -1,0 +1,41 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: grafana
+  namespace: bot-monitoring
+spec:
+  repo: https://grafana.github.io/helm-charts
+  chart: grafana
+  targetNamespace: bot-monitoring
+  valuesContent: |-
+    admin:
+      existingSecret: "grafana-admin"
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: nginx
+      path: /grafana/
+      pathType: Prefix
+      hosts: []
+    grafana.ini:
+      server:
+        root_url: "/grafana"
+        serve_from_sub_path: true
+      panels:
+        disable_sanitize_html: true
+    persistence:
+      enabled: true
+      storageClassName: local-path
+    nodeSelector:
+      kubernetes.io/hostname: master
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  namespace: bot-monitoring
+  name: grafana-admin
+type: Opaque
+data:
+  admin-user: YWRtaW4=
+  admin-password: bGV0c3JvY2t0aGlzIC1uCg==
