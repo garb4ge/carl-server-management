@@ -16,11 +16,11 @@ spec:
       enabled: true
       user:
         username: admin
-        password: letsrockthis
-      initScripts:
-        enabled: true
-        scripts:
-          init.iql: |+
-            CREATE DATABASE "bot" WITH DURATION 30d
+        password: admin
+    initScripts:
+      enabled: true
+      scripts:
+        init.iql: |+
+          CREATE DATABASE "bot" WITH DURATION 30d
     nodeSelector:
       kubernetes.io/hostname: master

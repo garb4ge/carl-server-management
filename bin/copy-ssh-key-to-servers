@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import multiprocessing
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--keyfile", required=True)
+parser.add_argument("--server-list", required=True)
+parser.add_argument("--ignore-list", required=True)
+
+args = parser.parse_args()
+result = ""
+failed_servers = []
+
+def task(ip, password):
+  try:
+    subprocess.check_output(["sshpass", "-p", password, "ssh-copy-id", "-o", "UserKnownHostsFile=/dev/null", "-i", args.keyfile, "-o", "StrictHostKeyChecking=no", f"root@{ip}"], timeout=30)
+    return ip, True, None
+  except Exception as e:
+    return ip, False, str(e)
+
+ignore = [line.strip() for line in open(args.ignore_list, "r").readlines()]
+with open(args.server_list, "r") as servers:
+  with multiprocessing.Pool() as pool:
+    tasks = []
+    for line in servers.readlines():
+        id, ip, password, active, *_ = line.strip().split(";")
+        if ip in ignore:
+          print(f"Skipping server {ip}, since it is ignored.")
+          continue
+        tasks.append(pool.apply_async(task, (ip, password)))
+    result = [task.get() for task in tasks]
+
+print("Success")
+for ip, status, txt in result:
+  if status:
+    print(ip)
+  else:
+    failed_servers.append(txt)
+
+print("Failed")
+print(failed_servers)

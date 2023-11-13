@@ -1,0 +1,89 @@
+---
+k3s_cluster:
+  children:
+    server:
+      hosts:
+        172.245.135.125:
+          
+
+    agent:
+      hosts:
+        199.188.103.182:
+        199.188.103.183:
+        198.12.80.141:
+        199.188.103.184:
+        199.188.103.185:
+        199.188.103.186:
+        199.188.103.188:
+        199.188.103.189:
+        199.188.103.190:
+        23.95.187.130:
+        23.95.187.131:
+        23.95.187.132:
+        23.95.187.133:
+        23.95.187.134:
+        23.95.187.135:
+        23.95.187.136:
+        23.95.187.137:
+        23.95.187.138:
+        23.95.187.139:
+        23.95.187.150:
+        23.95.187.157:
+        198.12.82.166:
+        198.12.82.173:
+        192.3.2.155:
+        192.3.2.156:
+        192.3.2.157:
+        192.3.2.158:
+        192.210.186.42:
+        192.210.186.45:
+        192.210.186.46:
+        192.210.186.48:
+        192.210.186.49:
+        198.46.129.42:
+        198.46.129.43:
+        198.46.129.49:
+        198.46.129.46:
+        198.46.129.50:
+        198.46.129.51:
+        198.46.129.52:
+        198.46.129.53:
+        198.46.129.54:
+        198.46.129.55:
+        198.46.129.56:
+        198.46.129.57:
+        198.46.129.58:
+        23.95.188.194:
+        23.95.188.195:
+        23.95.188.196:
+        23.95.188.197:
+        192.3.46.237:
+        107.173.130.216:
+        192.3.204.131:
+        192.3.204.151:
+        192.3.204.152:
+        172.245.211.114:
+        172.245.211.115:
+        172.245.211.125:
+        172.245.211.126:
+
+  # Required Vars
+  vars:
+    ansible_port: 22
+    ansible_user: root
+    k3s_version: v1.26.9+k3s1
+    token: "mytoken"  # Use ansible vault if you want to keep it secret
+    api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
+    extra_server_args: "--secrets-encryption --flannel-backend=wireguard-native --node-label svccontroller.k3s.cattle.io/enablelb=true --disable=traefik"
+    extra_agent_args: ""
+
+#7CHqFff0R9v13iP8rG
+
+  # Optional vars
+    # api_port: 6443
+    # k3s_server_location: /var/lib/rancher/k3s
+    # systemd_dir: /etc/systemd/system
+    # extra_service_envs: [ 'ENV_VAR1=VALUE1', 'ENV_VAR2=VALUE2' ]
+    # List of locally available manifests to apply to the cluster, useful for PVCs or Traefik modifications.
+    # Manifests should be either full paths or relative to the playbook directory.
+    # extra_manifests: [ '/path/to/manifest1.yaml', '/path/to/manifest2.yaml' ]

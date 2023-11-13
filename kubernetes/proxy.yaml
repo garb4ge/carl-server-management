@@ -1,0 +1,73 @@
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: proxy
+  namespace: bot
+spec:
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      volumes:
+        - name: proxy-config-volume
+          configMap:
+            name: proxy-config
+            items:
+              - key: squid
+                path: squid.conf
+            defaultMode: 420
+      containers:
+        - name: squid
+          image: ubuntu/squid:edge
+          ports:
+            - name: squid
+              containerPort: 3128
+              protocol: TCP
+          resources: {}
+          volumeMounts:
+            - name: proxy-config-volume
+              mountPath: /etc/squid/squid.conf
+              subPath: squid.conf
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 0
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: proxy-config
+  namespace: bot
+data:
+  squid: |-
+    acl SSL_ports port 443
+    acl Safe_ports port 80
+    acl Safe_ports port 443
+    acl CONNECT method CONNECT
+    http_access allow all
+    http_port 3128
+    coredump_dir /var/spool/squid
+    cache deny all
+    cache_dir ufs /tmp 1 10 10
+    logfile_rotate 0
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy
+  namespace: bot
+spec:
+  ports:
+    - protocol: TCP
+      port: 3128
+      targetPort: 3128
+  selector:
+    app: proxy
+  type: ClusterIP

@@ -1,3 +1,12 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  namespace: bot-monitoring
+  name: grafana-admin
+type: Opaque
+data:
+  admin-user: YWRtaW4=
+  admin-password: bGV0c3JvY2t0aGlzIQ==
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
@@ -24,18 +33,51 @@ spec:
         serve_from_sub_path: true
       panels:
         disable_sanitize_html: true
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+        - name: MySQL
+          type: mysql
+          url: mysql.bot.svc.cluster.local:3306
+          user: root
+          uid: mysql
+          jsonData:
+            database: my_database
+            maxOpenConns: 100 # Grafana v5.4+
+            maxIdleConns: 100 # Grafana v5.4+
+            maxIdleConnsAuto: true # Grafana v9.5.1+
+            connMaxLifetime: 14400 # Grafana v5.4+
+          secureJsonData:
+            password: mJan2LLam
+        - name: influxdb
+          uid: influxdb
+          type: influxdb
+          access: proxy
+          url: http://influxdb.bot-monitoring.svc.cluster.local:8086
+          jsonData:
+            # This database should be mapped to a bucket
+            dbName: bot
+            httpMode: GET
+        - name: Loki
+          type: loki
+          uid: loki
+          access: proxy
+          url: http://grafana-loki.bot-monitoring.svc.cluster.local:3100
+
     persistence:
       enabled: true
       storageClassName: local-path
     nodeSelector:
       kubernetes.io/hostname: master
 ---
-kind: Secret
-apiVersion: v1
+
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
 metadata:
+  name: grafana-loki
   namespace: bot-monitoring
-  name: grafana-admin
-type: Opaque
-data:
-  admin-user: YWRtaW4=
-  admin-password: bGV0c3JvY2t0aGlzIC1uCg==
+spec:
+  repo: https://grafana.github.io/helm-charts
+  chart: loki-stack
+  targetNamespace: bot-monitoring
