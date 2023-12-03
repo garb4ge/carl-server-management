@@ -26,7 +26,8 @@ with open(args.server_list, "r") as servers:
   with multiprocessing.Pool() as pool:
     tasks = []
     for line in servers.readlines():
-        id, ip, password, active, *_ = line.strip().split(";")
+#        id, ip, password, active, *_ = line.strip().split(";")
+        ip, password = line.strip().split(";")
         if ip in ignore:
           print(f"Skipping server {ip}, since it is ignored.")
           continue
